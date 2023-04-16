@@ -36,7 +36,7 @@ def read_config(filename,value_type=str,name_idx=0,value_idx=1)->dict:
 
 def get_config():
     config = read_config("./config.txt")
-    eval_list = ['stu_doit','B_Aclass',"D_only",'lesson_expel','D_Aclass']
+    eval_list = eval(config["eval_list"])
     for item in config:
         if item in eval_list:
             config[item] = eval(config[item])

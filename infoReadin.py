@@ -45,6 +45,7 @@ class record:
         self._class = row["学生类别"]
         self.major = row["专业"]
         self.year = row["学年"]
+        self.kkxy = row["开课学院"]
 
 
         # add all attributes to the find_dict dictionary
@@ -63,7 +64,8 @@ class record:
             "考试性质": self.testNat,
             "学生类别": self._class,
             "专业": self.major,
-            "学年": self.year
+            "学年": self.year,
+            "开课学院": self.kkxy
         }
 
     def find_label(self, string):
@@ -87,7 +89,7 @@ class student:
     def __str__(self):
         return f"学号:{self.id},姓名:{self.name},专业:{self.major},年级:{self.grade},记录课程数:{len(self.record)}"
 
-    def calculate(self,taskid,demand=None,A_lis=None):
+    def calculate(self,taskid,demand=None,A_lis=None,major=None):
         collection = []
         if taskid==0:
             sum_cre = 0
@@ -112,8 +114,56 @@ class student:
                     temp.cregra = temp.cregra * frag
                     collection.append(temp)
             return sum_valscore/sum_cre,collection
+        
         elif taskid==2:
-            pass
+            # demand_list = ["C_condition_line","C_zx_line","C_condition_keybm","C_condition_keyxz",
+            #        "C_condition_keyname"]
+            assert type(demand)==list and major!=None
+            condition_line = demand[0]
+            [condition_keybm,condition_keyxz,condition_keyname] = demand[2:5]
+            if major=="应用化学(化学生物学)":
+                condition_line["专选"] = demand[1][1]
+                condition_line["专必"] = demand[5][2] 
+                condition_keyname["专必"] = demand[6][2]
+            elif major=="应用化学":
+                condition_line["专选"] = demand[1][0]
+                condition_line["专必"] = demand[5][1] 
+                condition_keyname["专必"] = demand[6][1]
+            elif major=="化学":
+                condition_line["专选"] = demand[1][0]
+                condition_line["专必"] = demand[5][0] 
+                condition_keyname["专必"] = demand[6][0]
+            else:
+                condition_line["专选"] = 0
+                condition_line["专必"] = []
+                condition_keyname["专必"] = []
+
+
+            condition_dict = {"开课学院":condition_keybm,"课程性质":condition_keyxz,
+                              "课程名称":condition_keyname}
+            sum_demand = {key:0 for key in condition_line}
+
+            def judge_belong(obj,lis):
+                if type(obj)!=str:
+                    return False
+                for item in lis:
+                    if item in obj:
+                        return True
+                return False
+            
+            for item in self.record.values():
+                for cri in condition_dict:
+                    for label in condition_dict[cri]:
+                        # print(cri,item.find_label(cri),condition_dict[cri],label)
+                        if judge_belong(item.find_label(cri),condition_dict[cri][label]) and item.score>=60:
+                            sum_demand[label] += item.credit
+            
+            res_dict = {key:"" for key in condition_line}
+            for key in res_dict:
+                if sum_demand[key] < float(condition_line[key]):
+                    res_dict[key] = f"应修{condition_line[key]}学分;实修{sum_demand[key]}学分"
+            return res_dict
+        
         elif taskid==3:
             assert demand!=None and A_lis!=None
             sum_compcre = 0
