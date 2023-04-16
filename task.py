@@ -112,7 +112,6 @@ def taskD(filename="result.csv"):
 def  taskC(filename="result.csv"):
     demand_list = ["C_condition_line","C_zx_line","C_condition_keybm","C_condition_keyxz",
                    "C_condition_keyname","C_zb_line","C_zb_name"]
-    print(all_dict)
     res_dict = {i:[all_dict[i].name,all_dict[i].major,all_dict[i].calculate(
         2,demand=[config[j] for j in demand_list],major=all_dict[i].major)] for i in all_dict}
     return output_C(filename,res_dict)
